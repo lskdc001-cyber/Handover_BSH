@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>차량 인도 스케줄(분당) — PRODUCT EXPERT</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12161C">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="인도스케줄">
+<style>
+  :root{
+    --ink:#12161C; --panel:#1C232E; --bg:#EEF0F3; --card:#FFFFFF;
+    --line:#D7DBE2; --silver:#8A93A0; --blue:#0A5BD3; --blue-soft:#E7F0FE;
+    --amber:#B97509; --amber-soft:#FBF1DC; --green:#1F7A3D; --green-soft:#E2F3E8;
+    --gray:#6B7280; --gray-soft:#ECEDEF; --red:#C0392B;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;
+    background:var(--bg); color:var(--ink); font-size:14px; line-height:1.5;
+  }
+  header{
+    background:var(--ink); color:#fff; padding:14px 18px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .brand b{font-size:16px; letter-spacing:.4px; display:block;}
+  .brand span{font-size:11px; color:#9AA4B2; letter-spacing:2px; text-transform:uppercase;}
+  .head-right{margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  input[type="date"]{
+    background:#242C38; border:1px solid #3A4452; color:#fff;
+    padding:7px 10px; border-radius:8px; font-family:inherit; font-size:13px;
+  }
+  .btn{
+    border:none; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:700;
+    cursor:pointer; font-family:inherit; transition:filter .15s;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .btn-blue{background:var(--blue); color:#fff;}
+  .btn-ghost{background:#242C38; color:#DDE3EA; border:1px solid #3A4452;}
+  .btn-light{background:var(--gray-soft); color:var(--ink);}
+  .btn-red{background:var(--red); color:#fff;}
+  .pe-badge{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800;
+    background:#0F3E1F; color:#7BE39B; border:1px solid #1F7A3D;
+    padding:6px 10px; border-radius:20px;
+  }
+  .setup-warn{
+    background:#7A1F1F; color:#FFD9D9; font-size:12.5px; padding:10px 18px; line-height:1.6;
+  }
+  .infobar{display:flex; gap:8px; overflow-x:auto; padding:12px 18px;}
+  .pe-chip{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:8px 12px; min-width:150px; flex:0 0 auto;
+  }
+  .pe-chip .nm{font-weight:800; font-size:13px;}
+  .pe-chip .loc{font-size:12px; margin-top:2px;}
+  .loc-gn{color:var(--blue);} .loc-off{color:var(--gray);}
+  .pe-chip .memo{font-size:11px; color:var(--silver); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;}
+  .wrap{padding:0 18px 60px;}
+  .grid-scroll{overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); min-height:120px;}
+  .loading{padding:40px; text-align:center; color:var(--silver); font-size:13px;}
+  table{border-collapse:collapse; width:100%; min-width:720px;}
+  th,td{border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:0;}
+  th:last-child, td:last-child{border-right:none;}
+  thead th{
+    background:var(--panel); color:#fff; font-size:13px; padding:10px 8px;
+    position:sticky; top:0; z-index:2;
+  }
+  thead th small{display:block; font-weight:400; font-size:11px; color:#A9B2BF; margin-top:2px;}
+  th.time-h{width:64px;}
+  td.time-c{
+    text-align:center; font-weight:800; font-size:12px; color:var(--silver);
+    background:#F7F8FA; width:64px; padding:8px 4px;
+  }
+  td.slot{vertical-align:top; min-width:130px; height:52px; padding:4px; position:relative;}
+  td.slot.off-col{background:repeating-linear-gradient(45deg,#F3F4F6,#F3F4F6 6px,#EBECEF 6px,#EBECEF 12px);}
+  .add-hit{
+    position:absolute; inset:4px; border-radius:6px; border:1px dashed transparent;
+    background:none; cursor:pointer; color:transparent; font-size:18px; width:calc(100% - 8px);
+  }
+  td.slot:hover .add-hit{border-color:var(--line); color:var(--silver);}
+  .bk{
+    border-radius:7px; padding:6px 8px; margin-bottom:4px; cursor:pointer;
+    border:1px solid; font-size:12px; position:relative; z-index:1;
+  }
+  .bk .cu{font-weight:800;}
+  .bk .cr{font-size:11px;}
+  .bk .rp{font-size:11px; opacity:.75;}
+  .bk-요청{background:var(--amber-soft); border-color:#E5C88F; color:#7A5006;}
+  .bk-확정{background:var(--blue-soft); border-color:#A9C8F5; color:#0A4098;}
+  .bk-인도완료{background:var(--green-soft); border-color:#A7D9B8; color:#15522A;}
+  .bk-취소{background:var(--gray-soft); border-color:#D3D5D9; color:var(--gray); text-decoration:line-through;}
+  .stbadge{font-size:10px; font-weight:800; border-radius:4px; padding:1px 5px; float:right;}
+  .overlay{
+    position:fixed; inset:0; background:rgba(10,14,20,.55); display:none;
+    align-items:flex-start; justify-content:center; padding:24px 14px; z-index:50; overflow-y:auto;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--card); border-radius:14px; width:100%; max-width:440px;
+    padding:20px; box-shadow:0 18px 48px rgba(0,0,0,.28);
+  }
+  .modal h3{font-size:16px; margin-bottom:4px;}
+  .modal .sub{font-size:12px; color:var(--silver); margin-bottom:14px;}
+  .fld{margin-bottom:12px;}
+  .fld label{display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:#3A4452;}
+  .fld input,.fld select{
+    width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px;
+    font-family:inherit; font-size:14px; background:#FBFCFD;
+  }
+  .fld input:focus,.fld select:focus{outline:2px solid var(--blue); border-color:transparent;}
+  .fld .hint{font-size:11px; color:var(--silver); margin-top:3px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .modal-actions{display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap;}
+  .lock-note{
+    background:#FBF6EA; border:1px solid #EAD9AE; color:#7A5A12;
+    border-radius:8px; padding:10px 12px; font-size:12.5px; margin-top:12px;
+  }
+  .detail-line{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13.5px;}
+  .detail-line b{color:#3A4452; font-weight:700;}
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:24px;
+    font-size:13px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:99;
+    max-width:90vw; text-align:center;
+  }
+  .toast.show{opacity:1;}
+  .empty-note{padding:14px 18px 0; font-size:12px; color:var(--silver);}
+  .fab{
+    position:fixed; right:20px; bottom:20px; z-index:20;
+    background:var(--blue); color:#fff; border:none; border-radius:28px;
+    padding:14px 20px; font-size:14px; font-weight:800; font-family:inherit;
+    box-shadow:0 8px 20px rgba(10,91,211,.35); cursor:pointer;
+  }
+  .pe-tools{display:flex; gap:8px; padding:0 18px 12px; flex-wrap:wrap;}
+  .pes-row{display:grid; grid-template-columns:1fr 1.6fr; gap:8px; margin-bottom:8px;}
+  @media (max-width:640px){
+    header{padding:12px 14px;}
+    .wrap{padding:0 10px 80px;}
+    .infobar{padding:10px;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <b>차량 인도 스케줄</b>
+    <span>Product Expert · Delivery Board</span>
+  </div>
+  <div class="head-right">
+    <span id="userChip" style="display:none;font-size:12px;color:#DDE3EA">
+      👤 <b id="userName"></b>
+      <button class="btn" style="background:none;color:#9AA4B2;padding:0 4px;font-size:12px" id="myPwBtn">비번변경</button>
+      <button class="btn" style="background:none;color:#9AA4B2;padding:0 4px;font-size:12px" id="logoutBtn">로그아웃</button>
+    </span>
+    <input type="date" id="datePick" aria-label="날짜 선택">
+    <button class="btn btn-blue" id="installBtn" style="display:none">📱 앱 설치</button>
+    <span class="pe-badge" id="peBadge" style="display:none">✓ PE</span>
+  </div>
+</header>
+
+<div class="setup-warn" id="setupWarn" style="display:none">
+  ⚠ Firebase 설정이 비어 있습니다. 이 파일을 메모장으로 열어 상단의
+  <b>firebaseConfig</b>에 Firebase 콘솔에서 복사한 설정을 붙여넣으세요. (Firebase 안내서 3단계)
+</div>
+
+<div class="infobar" id="infobar"></div>
+<div class="pe-tools" id="peTools" style="display:none">
+  <button class="btn btn-light" id="peInfoBtn">근무·휴무 설정</button>
+  <button class="btn btn-light" id="peNamesBtn">PE 명단·이메일</button>
+  <button class="btn btn-light" id="accAdminBtn">직원 계정 관리</button>
+  <button class="btn btn-light" id="uploadShiftBtn">📅 근무표 업로드</button>
+  <input type="file" id="shiftFile" accept=".xlsx,.xls,.csv" style="display:none">
+  <button class="btn btn-light" id="exportBtn">📊 엑셀 내보내기</button>
+</div>
+
+<div class="wrap">
+  <div class="grid-scroll">
+    <div class="loading" id="loadingMsg">스케줄을 불러오는 중...</div>
+    <table id="grid" aria-label="시간대별 인도 스케줄" style="display:none"></table>
+  </div>
+  <p class="empty-note">※ <b>팀 공용 보드</b> — 한 시간대에 예약은 <b>1건</b>만 가능하며, 같은 <b>차대번호</b>는 중복 등록할 수 없습니다(동명이인·재구매 구분). 타인 예약의 고객명·차대번호는 <b>일부만 표시</b>되며 본인·PE만 원본을 봅니다. 등록 시 담당 PE와 본인에게 메일이 자동 발송되고, 내 예약은 <b>요청 상태에서만 직접 취소</b>할 수 있습니다. 확정 후 취소·시간변경은 <b>담당 PE에게 요청</b>해 주세요.</p>
+</div>
+
+<button class="fab" id="fabAdd">＋ 인도 등록</button>
+
+<!-- 등록/수정 모달 -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <h3 id="formTitle">인도 스케줄 등록</h3>
+    <p class="sub" id="formSub">영업직원용 · 등록 후 수정은 PE에게 요청</p>
+    <div class="fld" id="fDateWrap" style="display:none"><label>날짜 (PE 수정 — 다른 날로 이동 가능)</label>
+      <input type="date" id="fDate"></div>
+    <div class="row2">
+      <div class="fld"><label>시간</label><select id="fTime"></select></div>
+      <div class="fld"><label>담당 PE <span id="fPeLockNote" style="font-weight:400;color:var(--silver)"></span></label><select id="fPe"></select></div>
+    </div>
+    <div class="fld"><label>고객명 *</label><input id="fCustomer" placeholder="예: 홍길동" maxlength="30"></div>
+    <div class="fld"><label>차종 *</label><input id="fCar" placeholder="예: E300 4MATIC" maxlength="40"></div>
+    <div class="fld"><label>차대번호 * <span style="font-weight:400;color:var(--silver)">(필수 · 본인·PE만 원본 표시)</span></label>
+      <input id="fVin" placeholder="예: W1KZF8DB1PA123456" maxlength="20" style="text-transform:uppercase"></div>
+    <div class="row2">
+      <div class="fld" id="fRepWrap" style="display:none"><label>영업직원</label>
+        <input id="fRep" placeholder="예: 홍길동 (비우면 본인 이름으로 등록)" maxlength="20"></div>
+      <div class="fld"><label>전시장</label>
+        <select id="fBranch"><option>분당</option></select></div>
+    </div>
+    <div class="fld" id="fWho" style="background:#F2F6FD;border:1px solid #C9DCF7;border-radius:8px;padding:9px 11px;font-size:12.5px;color:#0A4098"></div>
+    <div class="fld"><label>업무구분</label>
+      <select id="fType"><option>출고인도</option><option>시승</option><option>케어</option><option>서류</option><option>기타</option></select></div>
+    <div class="fld"><label>메모</label><input id="fMemo" placeholder="특이사항 (선택)" maxlength="80"></div>
+    <div class="modal-actions">
+      <button class="btn btn-light" data-close>닫기</button>
+      <button class="btn btn-blue" id="fSave">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 모달 -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <h3>예약 상세</h3>
+    <p class="sub" id="dWhen"></p>
+    <div id="dBody"></div>
+    <div id="dPeActions" style="display:none">
+      <div class="fld" style="margin-top:14px"><label>상태 변경 (PE 전용) — 저장 시 영업직원에게 이메일 통보</label>
+        <select id="dStatus"><option>요청</option><option>확정</option><option>인도완료</option><option>취소</option></select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-red" id="dDelete">삭제</button>
+        <button class="btn btn-light" id="dEdit">내용 수정</button>
+        <button class="btn btn-blue" id="dApply">상태 저장</button>
+        <button class="btn btn-light" data-close>닫기</button>
+      </div>
+    </div>
+    <div id="dLockNote" class="lock-note" style="display:none"></div>
+    <div class="modal-actions" id="dOwnActions" style="display:none">
+      <button class="btn btn-red" id="dOwnCancel">본인 예약 취소</button>
+      <button class="btn btn-light" data-close>닫기</button>
+    </div>
+    <div class="modal-actions" id="dCloseOnly" style="display:none">
+      <button class="btn btn-light" data-close>확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- PE 근무 설정 모달 -->
+<div class="overlay" id="peInfoOverlay">
+  <div class="modal">
+    <h3>근무·휴무 설정</h3>
+    <p class="sub" id="peInfoDate"></p>
+    <div id="peInfoBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-light" data-close>닫기</button>
+      <button class="btn btn-blue" id="peInfoSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- PE 명단·이메일 모달 -->
+<div class="overlay" id="pesOverlay">
+  <div class="modal">
+    <h3>PE 명단·이메일 관리</h3>
+    <p class="sub">근무표에 표시할 PE 이름 목록입니다. 알림 메일은 각 PE의 로그인 계정으로 자동 발송됩니다.</p>
+    <div id="pesBody"></div>
+    <button class="btn btn-light" id="pesAddRow" style="margin-top:4px">＋ 직원 추가</button>
+    <div class="modal-actions">
+      <button class="btn btn-light" data-close>닫기</button>
+      <button class="btn btn-blue" id="pesSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 로그인 모달 -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <h3 id="authTitle">로그인</h3>
+    <p class="sub">영업직원·PE 공용 — ID는 이메일입니다</p>
+    <div class="fld" id="aNameWrap" style="display:none"><label>이름 *</label><input id="aName" placeholder="실명 입력" maxlength="20"></div>
+    <div class="fld"><label>이메일 (ID) *</label><input id="aEmail" placeholder="hong@hansung.co.kr" maxlength="60">
+      <div class="hint">가입은 회사 이메일(@hansung.co.kr)만 가능합니다</div></div>
+    <div class="fld"><label>비밀번호 * <span style="font-weight:400;color:var(--silver)">(6자 이상)</span></label><input id="aPw" type="password" maxlength="40">
+      <div class="hint"><a href="#" id="aResetPw" style="color:var(--blue)">비밀번호를 잊으셨나요? 재설정 메일 받기</a></div></div>
+    <div class="fld" id="aPw2Wrap" style="display:none"><label>비밀번호 확인 *</label><input id="aPw2" type="password" maxlength="40"></div>
+    <div class="fld" id="aPeWrap" style="display:none">
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;cursor:pointer">
+        <input type="checkbox" id="aWantPe" style="width:auto;margin-top:2px">
+        <span>PE(출고직원)로 가입 신청<br><span style="color:var(--silver);font-size:11.5px">기존 PE의 승인 후 PE 권한이 활성화됩니다. 이름은 근무표의 표기와 동일하게 입력하세요.</span></span>
+      </label>
+    </div>
+    <div class="fld" id="aCodeWrap" style="display:none">
+      <div class="lock-note" style="margin-top:0">📧 회사 메일로 <b>인증 링크</b>를 보냈습니다.<br>
+      메일 속 링크를 클릭한 뒤, 아래 <b>[인증 완료 확인]</b> 버튼을 눌러주세요. (스팸함도 확인)</div>
+    </div>
+    <div class="lock-note" style="margin-top:0">다른 사이트에서 쓰는 비밀번호를 재사용하지 마세요. 접수·확정 알림이 이 이메일로 발송됩니다.</div>
+    <div class="modal-actions">
+      <button class="btn btn-light" id="authSwitch">처음이신가요? 가입하기</button>
+      <button class="btn btn-blue" id="authGo">로그인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 직원 계정 관리 (PE) -->
+<div class="overlay" id="accOverlay">
+  <div class="modal">
+    <h3>직원 계정 관리</h3>
+    <p class="sub">비밀번호 분실은 로그인 화면의 '재설정 메일'로 본인이 직접 처리합니다</p>
+    <div id="accList" style="max-height:220px;overflow-y:auto"></div>
+    <div style="border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
+      <p class="sub" style="margin-top:0">이용 제한 — 차단된 이메일은 가입해도 시스템을 사용할 수 없습니다</p>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input id="blockEmailInput" placeholder="예: hong@hansung.co.kr" style="flex:1" maxlength="60">
+        <button class="btn btn-red" id="blockEmailBtn">차단</button>
+      </div>
+      <div id="blockList" style="max-height:120px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-light" data-close>닫기</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ★★★ 설치 시 여기만 수정 ★★★
+   Firebase 콘솔 → 프로젝트 설정 → 내 앱 → SDK 설정에서 복사한 값을 붙여넣으세요. */
+const firebaseConfig = {
+  apiKey: "AIzaSyD3d57Jmr055_8N2Knoa7itWVgLxi1sQ6w",
+  authDomain: "bsh-handover-ece87.firebaseapp.com",
+  projectId: "bsh-handover-ece87",
+  storageBucket: "bsh-handover-ece87.firebasestorage.app",
+  messagingSenderId: "360245247090",
+  appId: "1:360245247090:web:61d6c68d8a114805de16eb"
+};
+const REGION = "asia-northeast3";      // 서울
+const DOMAIN = "hansung.co.kr";        // 가입 허용 도메인
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         sendEmailVerification, sendPasswordResetEmail, signOut,
+         onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, query, where, onSnapshot,
+         setDoc, getDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+const TIMES = []; for (let h = 9; h <= 18; h++) TIMES.push(String(h).padStart(2, "0") + ":00");
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function todayStr() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2600); }
+function fmtDate(ds) { const [y, m, d] = ds.split("-"); const w = ["일","월","화","수","목","금","토"][new Date(ds + "T00:00:00").getDay()]; return `${Number(m)}월 ${Number(d)}일 (${w})`; }
+function errMsg(e) { return (e && e.message ? e.message : "오류가 발생했습니다").replace(/^Firebase:\s*/, "").replace(/\s*\(.*\)\.?$/, "") || "오류가 발생했습니다"; }
+
+let app, auth, db, fx, call = {};
+let user = null, profile = { name: "", role: "영업" };
+let peMode = false, signupMode = false, verifyMode = false, busy = false;
+let curDate = todayStr(), day = { bookings: [], peInfo: {} }, pes = [];
+let unsubBk = null, unsubInfo = null, unsubCfg = null, unsubPriv = null;
+let privMap = {};   // 열람 권한이 있는 예약의 원본(고객명·차대번호)
+const dispC = (b) => (privMap[b.id] && privMap[b.id].customer) || b.customerMasked || "";
+const dispV = (b) => (privMap[b.id] && privMap[b.id].vin) || b.vinMasked || "";
+let editingId = null, detailId = null;
+
+/* ── 초기화 ── */
+if (!firebaseConfig.apiKey) {
+  $("setupWarn").style.display = "block";
+  $("loadingMsg").textContent = "Firebase 설정 후 사용할 수 있습니다.";
+} else {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  fx = getFunctions(app, REGION);
+  ["createBooking","setStatus","editBooking","deleteBooking","cancelOwn",
+   "approvePe","revokePe","deleteAccount","exportRange"].forEach(n => call[n] = httpsCallable(fx, n));
+
+  onAuthStateChanged(auth, async (u) => {
+    user = u;
+    if (!u) { teardown(); setAuthMode(false); showAuth(); return; }
+    try { await u.reload(); } catch (e) {}     // 캐시값이 아닌 서버 최신 상태로 재확인 (이중 방어)
+    if (!auth.currentUser || !auth.currentUser.emailVerified) { setVerifyMode(true); showAuth(); return; }
+    await u.getIdToken(true);                 // email_verified 클레임 갱신
+    await loadProfile();
+    $("authOverlay").classList.remove("open");
+    applyAuthUI(); startSubscriptions();
+  });
+}
+
+async function loadProfile() {
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) profile = { name: snap.data().name || user.displayName || "", role: snap.data().role || "영업" };
+    else {
+      profile = { name: user.displayName || user.email.split("@")[0], role: "영업" };
+      await setDoc(doc(db, "users", user.uid), { name: profile.name, email: user.email, role: "영업", createdAt: new Date().toISOString() });
+    }
+  } catch (e) { profile = { name: user.displayName || "", role: "영업" }; }
+}
+
+/* ── 실시간 구독 ── */
+function teardown() { [unsubBk, unsubInfo, unsubCfg, unsubPriv].forEach(f => f && f()); unsubBk = unsubInfo = unsubCfg = unsubPriv = null; privMap = {}; }
+function startSubscriptions() {
+  if (!unsubCfg) unsubCfg = onSnapshot(doc(db, "config", "main"),
+    s => { pes = (s.exists() && s.data().pes) || []; render(); },
+    () => toast("설정 로드 실패 — 새로고침해 주세요"));
+  subscribeDay(curDate);
+}
+function subscribeDay(date) {
+  if (unsubBk) unsubBk(); if (unsubInfo) unsubInfo(); if (unsubPriv) unsubPriv();
+  privMap = {};
+  // 원본 구독: PE/MASTER는 전체, 영업직원은 본인 것만 (규칙이 서버에서 강제)
+  const pq = peMode
+    ? query(collection(db, "bookingsPrivate"), where("date", "==", date))
+    : query(collection(db, "bookingsPrivate"), where("date", "==", date), where("repUid", "==", user.uid));
+  unsubPriv = onSnapshot(pq, (snap) => {
+    privMap = {}; snap.docs.forEach(d => privMap[d.id] = d.data()); render();
+  }, () => {});
+  $("loadingMsg").style.display = "block"; $("grid").style.display = "none";
+  unsubBk = onSnapshot(query(collection(db, "bookings"), where("date", "==", date)), (snap) => {
+    day.bookings = snap.docs.map(d => ({ id: d.id, ...d.data(), own: d.data().repUid === user.uid }))
+      .sort((a, b) => a.time.localeCompare(b.time));
+    render();
+  }, (e) => { $("loadingMsg").textContent = e.code === "permission-denied"
+    ? "이 계정은 이용이 제한되었습니다. 관리자에게 문의해 주세요."
+    : "불러오기 실패 — " + errMsg(e); });
+  unsubInfo = onSnapshot(doc(db, "peInfo", date), (s) => {
+    day.peInfo = (s.exists() && s.data().info) || {}; render();
+  });
+}
+
+/* ── 렌더 ── */
+function peLoc(n) { return (day.peInfo[n] || {}).loc || ""; }
+function applyAuthUI() {
+  peMode = profile.role === "PE" || profile.role === "MASTER";
+  $("peBadge").textContent = profile.role === "MASTER" ? "✓ MASTER" : "✓ PE";
+  $("userChip").style.display = user ? "inline-flex" : "none";
+  if (user) $("userName").textContent = profile.name + (peMode ? "" : profile.role === "PE대기" ? " (PE승인대기)" : "");
+}
+function render() {
+  if (!user) return;
+  const bar = $("infobar"); bar.innerHTML = "";
+  pes.forEach(name => {
+    const inf = day.peInfo[name] || {};
+    const loc = inf.loc || "미정";
+    const cls = loc === "분당" ? "loc-gn" : "loc-off";
+    const drive = inf.drive === undefined || inf.drive === null ? "" : (inf.drive ? " · 시승 O" : " · 시승 X");
+    const div = document.createElement("div"); div.className = "pe-chip";
+    div.innerHTML = `<div class="nm">${esc(name)}</div><div class="loc ${cls}">${esc(loc)}${drive}</div>` + (inf.memo ? `<div class="memo">${esc(inf.memo)}</div>` : "");
+    bar.appendChild(div);
+  });
+
+  const _todayS = todayStr(), _n = new Date();
+  const _nowHM = String(_n.getHours()).padStart(2, "0") + ":" + String(_n.getMinutes()).padStart(2, "0");
+  let html = `<thead><tr><th class="time-h">시간</th>`;
+  pes.forEach(name => {
+    const mine = peMode && profile.name === name;
+    html += `<th>${esc(name)}${mine ? " ⭐" : ""}<small>${mine ? "내 스케줄 · " : ""}${esc(peLoc(name) || "근무지 미정")}</small></th>`;
+  });
+  html += `</tr></thead><tbody>`;
+  TIMES.forEach(t => {
+    html += `<tr><td class="time-c">${t}</td>`;
+    pes.forEach(name => {
+      const inf = day.peInfo[name] || {};
+      const hardOff = inf.loc === "휴무";
+      const driveDuty = inf.drive === true;
+      const off = hardOff || (driveDuty && !peMode);   // 시승담당(O)은 영업직원에게만 차단, PE·MASTER는 등록 가능
+      // 10시~19시 근무자는 9시 예약 불가 (근무시간 외) · 19시는 시간표 자체에서 제외됨
+      const outOfShift = inf.memo === "10시출근" && t === "09:00";
+      const items = day.bookings.filter(b => b.time === t && b.pe === name);
+      const full = items.filter(b => b.status !== "취소").length >= 1;
+      const past = curDate < _todayS || (curDate === _todayS && t <= _nowHM);
+      html += `<td class="slot${off ? " off-col" : ""}">`;
+      items.forEach(b => {
+        html += `<div class="bk bk-${b.status}" data-id="${b.id}" role="button" tabindex="0">
+          <span class="stbadge">${b.status}</span>
+          <div class="cu">${esc(dispC(b))}</div>
+          <div class="cr">${esc(b.car)} · ${esc(b.type)}</div>
+          <div class="rp">영업: ${esc(b.repName)}</div></div>`;
+      });
+      if (!off && !full && !past && !outOfShift) html += `<button class="add-hit" data-time="${t}" data-pe="${esc(name)}" aria-label="${t} ${esc(name)} 등록">＋</button>`;
+      html += `</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody>`;
+  $("grid").innerHTML = html;
+  $("loadingMsg").style.display = "none"; $("grid").style.display = "table";
+  $("peBadge").style.display = peMode ? "inline-flex" : "none";
+  $("peTools").style.display = peMode ? "flex" : "none";
+  // 영업직원은 시간표의 PE별 칸(＋)으로만 등록 — 담당 PE가 항상 정확히 고정되도록
+  $("fabAdd").style.display = peMode ? "inline-flex" : "none";
+}
+
+/* ── 로그인·가입 (Firebase Auth) ── */
+function showAuth() { $("authOverlay").classList.add("open"); setTimeout(() => $("aEmail").focus(), 50); }
+function setAuthMode(signup) {
+  signupMode = signup; verifyMode = false;
+  $("aEmail").disabled = false;
+  $("aCodeWrap").style.display = "none";
+  $("aPw").parentElement.style.display = "block";
+  $("aNameWrap").style.display = signup ? "block" : "none";
+  $("aPw2Wrap").style.display = signup ? "block" : "none";
+  $("aPeWrap").style.display = signup ? "block" : "none";
+  $("authTitle").textContent = signup ? "직원 가입" : "로그인";
+  $("authGo").textContent = signup ? "가입하기" : "로그인";
+  $("authSwitch").textContent = signup ? "이미 계정이 있어요 → 로그인" : "처음이신가요? 가입하기";
+}
+function setVerifyMode(on) {
+  verifyMode = on;
+  if (on) {
+    $("aEmail").value = user ? user.email : $("aEmail").value; $("aEmail").disabled = true;
+    $("aNameWrap").style.display = "none"; $("aPw").parentElement.style.display = "none";
+    $("aPw2Wrap").style.display = "none"; $("aPeWrap").style.display = "none";
+    $("aCodeWrap").style.display = "block";
+    $("authTitle").textContent = "이메일 인증";
+    $("authGo").textContent = "인증 완료 확인";
+    $("authSwitch").textContent = "인증메일 재발송";
+  }
+}
+async function authGo() {
+  if (busy) return; busy = true; $("authGo").disabled = true;
+  try {
+    const email = $("aEmail").value.trim();
+    if (verifyMode) {
+      await user.reload();
+      if (auth.currentUser.emailVerified) {
+        await auth.currentUser.getIdToken(true);
+        await loadProfile(); setAuthMode(false);
+        $("authOverlay").classList.remove("open");
+        toast(profile.role === "PE대기" ? profile.name + " 님, 인증 완료 — PE 승인 대기 중" : profile.name + " 님, 가입·인증 완료!");
+        applyAuthUI(); startSubscriptions();
+      } else toast("아직 인증되지 않았습니다 — 메일의 링크를 먼저 클릭해 주세요");
+      return;
+    }
+    const pw = $("aPw").value;
+    if (!email || !pw) { toast("이메일과 비밀번호를 입력해 주세요"); return; }
+    if (signupMode) {
+      const name = $("aName").value.trim();
+      if (!name) { toast("이름을 입력해 주세요"); return; }
+      if (!email.toLowerCase().endsWith("@" + DOMAIN)) { toast(`회사 이메일(@${DOMAIN})로만 가입할 수 있습니다`); return; }
+      if (pw.length < 6) { toast("비밀번호는 6자 이상"); return; }
+      if (pw !== $("aPw2").value) { toast("비밀번호 확인이 일치하지 않습니다"); return; }
+      const cred = await createUserWithEmailAndPassword(auth, email, pw);
+      await updateProfile(cred.user, { displayName: name });
+      await setDoc(doc(db, "users", cred.user.uid), {
+        name, email: email.toLowerCase(),
+        role: $("aWantPe").checked ? "PE대기" : "영업",
+        createdAt: new Date().toISOString()
+      });
+      await sendEmailVerification(cred.user);
+      setVerifyMode(true);
+      toast("인증 메일을 보냈습니다 — 링크 클릭 후 돌아와 주세요");
+    } else {
+      const cred = await signInWithEmailAndPassword(auth, email, pw);
+      if (!cred.user.emailVerified) { setVerifyMode(true); toast("이메일 인증이 필요합니다"); }
+      // 인증된 경우 onAuthStateChanged가 이어서 처리
+    }
+  } catch (e) {
+    const code = e.code || "";
+    if (code.includes("email-already-in-use")) toast("이미 가입된 이메일입니다. 로그인해 주세요.");
+    else if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) toast("이메일 또는 비밀번호가 올바르지 않습니다");
+    else if (code.includes("too-many-requests")) toast("시도가 너무 많습니다 — 잠시 후 다시");
+    else toast(errMsg(e));
+  } finally { busy = false; $("authGo").disabled = false; }
+}
+$("authGo").onclick = authGo;
+$("authSwitch").onclick = async () => {
+  if (verifyMode) {
+    try { await sendEmailVerification(auth.currentUser); toast("인증 메일을 재발송했습니다"); }
+    catch (e) { toast(errMsg(e)); }
+    return;
+  }
+  setAuthMode(!signupMode);
+};
+$("aResetPw").onclick = async (ev) => {
+  ev.preventDefault();
+  const email = $("aEmail").value.trim();
+  if (!email) { toast("이메일을 먼저 입력해 주세요"); return; }
+  try { await sendPasswordResetEmail(auth, email); toast("비밀번호 재설정 메일을 보냈습니다"); }
+  catch (e) { toast(errMsg(e)); }
+};
+$("logoutBtn").onclick = async () => { await signOut(auth); toast("로그아웃되었습니다"); };
+$("myPwBtn").onclick = async () => {
+  try { await sendPasswordResetEmail(auth, user.email); toast("비밀번호 재설정 메일을 보냈습니다 — 메일함 확인"); }
+  catch (e) { toast(errMsg(e)); }
+};
+
+/* ── 예약 등록/수정 ── */
+function openForm(time, pe, booking) {
+  editingId = booking ? booking.id : null;
+  $("formTitle").textContent = booking ? "예약 내용 수정 (PE)" : "인도 스케줄 등록";
+  $("formSub").textContent = booking ? fmtDate(curDate) + " · PE 수정" : "등록 시 담당 PE에게 메일이 발송됩니다";
+  $("fTime").innerHTML = TIMES.map(t => `<option${t === (booking ? booking.time : time) ? " selected" : ""}>${t}</option>`).join("");
+  $("fPe").innerHTML = pes.map(p => {
+    const off = peLoc(p) === "휴무";
+    const sel = p === (booking ? booking.pe : pe) ? " selected" : "";
+    return `<option value="${esc(p)}"${sel}${off ? " disabled" : ""}>${esc(p)}${off ? " (휴무)" : ""}</option>`;
+  }).join("");
+  // 담당 PE는 근무 배정에 따라 자동 선택되며, PE·MASTER 계정만 변경할 수 있습니다.
+  $("fPe").disabled = !peMode;
+  $("fPeLockNote").textContent = peMode ? "" : "(근무 배정에 따라 자동 선택됨 · PE만 변경 가능)";
+  $("fCustomer").value = booking ? dispC(booking) : "";
+  $("fCar").value = booking ? booking.car : "";
+  $("fVin").value = booking ? dispV(booking) : "";
+  $("fRep").value = booking ? booking.repName : "";
+  $("fRepWrap").style.display = peMode ? "block" : "none";   // PE·MASTER는 대리 등록 시 영업직원 지정 가능
+  $("fDateWrap").style.display = booking ? "block" : "none";
+  $("fDate").value = curDate;
+  $("fBranch").value = "분당";
+  $("fType").value = booking ? booking.type : "출고인도";
+  $("fMemo").value = booking ? (booking.memo || "") : "";
+  $("fWho").style.display = booking ? "none" : "block";
+  if (!booking) $("fWho").textContent = peMode
+    ? "처리 계정: " + profile.name + " — 영업직원 칸을 비우면 본인 이름으로 등록됩니다"
+    : "등록자: " + profile.name + " (" + user.email + ") — 접수·확정 메일이 자동 발송됩니다";
+  $("formOverlay").classList.add("open");
+  setTimeout(() => $("fCustomer").focus(), 50);
+}
+async function submitForm() {
+  if (busy) return;
+  const customer = $("fCustomer").value.trim(), car = $("fCar").value.trim();
+  const time = $("fTime").value, pe = $("fPe").value;
+  if (!customer || !car) { toast("고객명·차종은 필수입니다"); return; }
+  if (!$("fVin").value.trim()) { toast("차대번호는 필수입니다"); return; }
+  busy = true; $("fSave").disabled = true; $("fSave").textContent = "저장 중...";
+  try {
+    if (editingId) {
+      const r = await call.editBooking({ id: editingId, fields: {
+        date: $("fDate").value || curDate, time, pe, customer, car,
+        vin: $("fVin").value.trim(), branch: $("fBranch").value, type: $("fType").value, memo: $("fMemo").value.trim(),
+        ...(peMode ? { repName: $("fRep").value.trim() } : {}) } });
+      $("formOverlay").classList.remove("open");
+      let m = "수정되었습니다";
+      if (r.data.moved && $("fDate").value !== curDate) m += " — " + $("fDate").value + " 보드에서 확인하세요";
+      toast(m);
+    } else {
+      const r = await call.createBooking({ date: curDate, time, pe, customer, car,
+        vin: $("fVin").value.trim(), branch: $("fBranch").value, type: $("fType").value, memo: $("fMemo").value.trim(),
+        ...(peMode ? { repName: $("fRep").value.trim() } : {}) });
+      $("formOverlay").classList.remove("open");
+      toast("등록 완료 — 담당 PE에게 메일 발송");
+    }
+  } catch (e) { toast(errMsg(e)); }
+  finally { busy = false; $("fSave").disabled = false; $("fSave").textContent = editingId ? "수정 저장" : "등록"; editingId = null; }
+}
+$("fSave").onclick = submitForm;
+$("fabAdd").onclick = () => {
+  if (!pes.length) { toast("PE 명단이 비어 있습니다 — PE가 [PE 명단]에서 설정해 주세요"); return; }
+  openForm(TIMES[0], pes.find(p => peLoc(p) !== "휴무") || pes[0], null);
+};
+$("datePick").onchange = (e) => { curDate = e.target.value || todayStr(); subscribeDay(curDate); };
+
+/* ── 상세 ── */
+function openDetail(id) {
+  const b = day.bookings.find(x => x.id === id); if (!b) return;
+  detailId = id;
+  $("dWhen").textContent = `${fmtDate(curDate)} ${b.time} · 담당 PE: ${b.pe}`;
+  $("dBody").innerHTML = `
+    <div class="detail-line"><b>고객명</b><span>${esc(dispC(b))}</span></div>
+    <div class="detail-line"><b>차종</b><span>${esc(b.car)}</span></div>
+    ${dispV(b) ? `<div class="detail-line"><b>차대번호</b><span>${esc(dispV(b))}</span></div>` : ""}
+    <div class="detail-line"><b>업무구분</b><span>${esc(b.type)}</span></div>
+    <div class="detail-line"><b>영업직원</b><span>${esc(b.repName)} (${esc(b.branch)})</span></div>
+    <div class="detail-line"><b>상태</b><span>${esc(b.status)}</span></div>
+    ${b.memo ? `<div class="detail-line"><b>메모</b><span>${esc(b.memo)}</span></div>` : ""}`;
+  if (peMode) {
+    $("dPeActions").style.display = "block"; $("dLockNote").style.display = "none";
+    $("dOwnActions").style.display = "none"; $("dCloseOnly").style.display = "none";
+    $("dStatus").value = b.status;
+  } else {
+    $("dPeActions").style.display = "none";
+    const canSelf = !!b.own && b.status === "요청";
+    $("dOwnActions").style.display = canSelf ? "flex" : "none";
+    $("dCloseOnly").style.display = canSelf ? "none" : "flex";
+    $("dLockNote").style.display = "block";
+    $("dLockNote").innerHTML = canSelf
+      ? `본인이 등록한 예약입니다. <b>요청 상태에서만</b> 직접 취소할 수 있고, 확정 후에는 담당 PE(${esc(b.pe)})에게 요청해야 합니다.`
+      : `🔒 수정·시간변경·취소는 <b>담당 PE(${esc(b.pe)})</b>에게 요청해 주세요.<br>처리 결과는 등록하신 이메일로 통보됩니다.`;
+  }
+  $("detailOverlay").classList.add("open");
+}
+async function guarded(btn, label, fn) {
+  if (busy) return; busy = true;
+  const el = $(btn); el.disabled = true; const t0 = el.textContent; el.textContent = "처리 중...";
+  try { await fn(); } catch (e) { toast(errMsg(e)); }
+  finally { busy = false; el.disabled = false; el.textContent = label || t0; }
+}
+$("dApply").onclick = () => guarded("dApply", "상태 저장", async () => {
+  const r = await call.setStatus({ id: detailId, status: $("dStatus").value });
+  $("detailOverlay").classList.remove("open");
+  toast(r.data.unchanged ? "변경 없음" : r.data.mailed ? "저장 완료 — 영업직원에게 메일 발송" : "저장 완료");
+});
+$("dDelete").onclick = () => {
+  if (!confirm("이 예약을 완전히 삭제할까요? 되돌릴 수 없습니다.\n(영업직원에게 통보하려면 삭제 대신 '취소' 상태로 저장하세요)")) return;
+  guarded("dDelete", "삭제", async () => {
+    await call.deleteBooking({ id: detailId });
+    $("detailOverlay").classList.remove("open"); toast("삭제되었습니다");
+  });
+};
+$("dOwnCancel").onclick = () => {
+  if (!confirm("이 예약을 취소할까요?")) return;
+  guarded("dOwnCancel", "본인 예약 취소", async () => {
+    const r = await call.cancelOwn({ id: detailId });
+    $("detailOverlay").classList.remove("open");
+    toast("취소되었습니다 — 담당 PE에게 통보됨");
+  });
+};
+$("dEdit").onclick = () => {
+  const b = day.bookings.find(x => x.id === detailId); if (!b) return;
+  $("detailOverlay").classList.remove("open");
+  openForm(b.time, b.pe, b);
+};
+
+/* ── PE: 근무·휴무 (Firestore 직접 쓰기 — 규칙이 PE만 허용) ── */
+$("peInfoBtn").onclick = () => {
+  $("peInfoDate").textContent = fmtDate(curDate) + " 근무 정보";
+  const body = $("peInfoBody"); body.innerHTML = "";
+  pes.forEach((name, i) => {
+    const inf = day.peInfo[name] || {};
+    body.insertAdjacentHTML("beforeend", `
+      <div style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px">
+        <b style="font-size:13px">${esc(name)}</b>
+        <div class="row2" style="margin-top:6px">
+          <div class="fld" style="margin:0"><label>근무지</label>
+            <select data-pi-loc="${i}">${["미정","분당","휴무"].map(l => `<option${(inf.loc || "미정") === l ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+          <div class="fld" style="margin:0"><label>시승담당</label>
+            <select data-pi-drive="${i}">
+              <option value=""${inf.drive == null ? " selected" : ""}>-</option>
+              <option value="1"${inf.drive === true ? " selected" : ""}>O</option>
+              <option value="0"${inf.drive === false ? " selected" : ""}>X (시승·케어만)</option>
+            </select></div>
+        </div>
+        <div class="fld" style="margin:8px 0 0"><label>비고</label>
+          <input data-pi-memo="${i}" value="${esc(inf.memo || "")}" placeholder="예: 10시 출근" maxlength="60"></div>
+      </div>`);
+  });
+  $("peInfoOverlay").classList.add("open");
+};
+$("peInfoSave").onclick = () => guarded("peInfoSave", "저장", async () => {
+  const info = {};
+  pes.forEach((name, i) => {
+    const loc = document.querySelector(`[data-pi-loc="${i}"]`).value;
+    const dv = document.querySelector(`[data-pi-drive="${i}"]`).value;
+    info[name] = { loc: loc === "미정" ? "" : loc, drive: dv === "" ? null : dv === "1",
+                   memo: document.querySelector(`[data-pi-memo="${i}"]`).value.trim() };
+  });
+  await setDoc(doc(db, "peInfo", curDate), { info });
+  $("peInfoOverlay").classList.remove("open"); toast("근무 정보 저장 완료");
+});
+
+/* ── PE: 명단 (config/main.pes) ── */
+$("peNamesBtn").onclick = () => {
+  const body = $("pesBody"); body.innerHTML = "";
+  (pes.length ? pes : [""]).forEach(n => addPesRow(n));
+  $("pesOverlay").classList.add("open");
+};
+function addPesRow(name) {
+  $("pesBody").insertAdjacentHTML("beforeend",
+    `<div class="pes-row" style="grid-template-columns:1fr"><input class="pes-nm" placeholder="근무표에 표시할 이름" value="${esc(name)}" maxlength="15"></div>`);
+}
+$("pesAddRow").onclick = () => addPesRow("");
+$("pesSave").onclick = () => guarded("pesSave", "저장", async () => {
+  const names = [...document.querySelectorAll(".pes-nm")].map(i => i.value.trim()).filter(Boolean).slice(0, 8);
+  if (!names.length) { toast("최소 1명이 필요합니다"); return; }
+  await setDoc(doc(db, "config", "main"), { pes: names }, { merge: true });
+  $("pesOverlay").classList.remove("open"); toast("PE 명단 저장 완료");
+});
+
+/* ── PE: 계정 관리 ── */
+async function renderBlockList() {
+  const snap = await getDoc(doc(db, "config", "blocklist"));
+  const emails = (snap.exists() && snap.data().emails) || [];
+  const box = $("blockList");
+  box.innerHTML = emails.length ? "" : "<p style='font-size:12px;color:var(--silver)'>차단된 이메일이 없습니다</p>";
+  emails.forEach(email => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px";
+    row.innerHTML = `<span style="flex:1">${esc(email)}</span>`;
+    const ub = document.createElement("button"); ub.className = "btn btn-light"; ub.textContent = "해제";
+    ub.onclick = async () => {
+      const next = emails.filter(e => e !== email);
+      await setDoc(doc(db, "config", "blocklist"), { emails: next }, { merge: true });
+      toast("차단 해제되었습니다"); renderBlockList();
+    };
+    row.appendChild(ub); box.appendChild(row);
+  });
+}
+$("blockEmailBtn").onclick = async () => {
+  const email = $("blockEmailInput").value.trim().toLowerCase();
+  if (!email || !email.includes("@")) { toast("이메일 형식이 올바르지 않습니다"); return; }
+  const snap = await getDoc(doc(db, "config", "blocklist"));
+  const emails = (snap.exists() && snap.data().emails) || [];
+  if (emails.includes(email)) { toast("이미 차단된 이메일입니다"); return; }
+  if (!confirm(email + " 계정을 차단할까요? 로그인은 되지만 시스템을 전혀 사용할 수 없게 됩니다.")) return;
+  await setDoc(doc(db, "config", "blocklist"), { emails: [...emails, email] }, { merge: true });
+  $("blockEmailInput").value = ""; toast("차단되었습니다"); renderBlockList();
+};
+$("accAdminBtn").onclick = async () => {
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    const list = $("accList"); list.innerHTML = snap.empty ? "<p style='font-size:13px;color:var(--silver)'>계정이 없습니다</p>" : "";
+    snap.docs.forEach(d => {
+      const a = d.data(); const uid = d.id;
+      const roleTag = a.role === "MASTER" ? "🔵 MASTER" : a.role === "PE" ? "🟢 PE" : a.role === "PE대기" ? "🟡 PE대기" : "영업";
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex;align-items:center;gap:8px;border-bottom:1px dashed var(--line);padding:8px 0;font-size:13px";
+      div.innerHTML = `<span style="flex:1"><b>${esc(a.name)}</b> <span style="font-size:11px;color:var(--silver)">${roleTag}</span><br><span style="color:var(--silver);font-size:11.5px">${esc(a.email)}</span></span>`;
+      if (a.role !== "MASTER") {
+        const pb = document.createElement("button"); pb.className = "btn btn-light";
+        pb.textContent = a.role === "PE" ? "PE해제" : "PE승인";
+        pb.onclick = async () => {
+          if (!confirm(a.name + " 님을 " + (a.role === "PE" ? "PE에서 해제" : "PE로 승인") + "할까요?")) return;
+          try { await (a.role === "PE" ? call.revokePe : call.approvePe)({ uid }); toast("처리되었습니다"); $("accOverlay").classList.remove("open"); }
+          catch (e) { toast(errMsg(e)); }
+        };
+        const db2 = document.createElement("button"); db2.className = "btn btn-red"; db2.textContent = "삭제";
+        db2.onclick = async () => {
+          if (!confirm(a.name + " (" + a.email + ") 계정을 삭제할까요?")) return;
+          try { await call.deleteAccount({ uid }); toast("삭제되었습니다"); div.remove(); }
+          catch (e) { toast(errMsg(e)); }
+        };
+        div.appendChild(pb); div.appendChild(db2);
+      }
+      list.appendChild(div);
+    });
+    await renderBlockList();
+    $("accOverlay").classList.add("open");
+  } catch (e) { toast(errMsg(e)); }
+};
+
+/* ── PE: 근무표 엑셀 일괄 업로드 (실제 습관 그대로 — 주별 블록 × 날짜쌍(출고/시승) 열 형식) ── */
+function normSheetDate(v) {
+  if (v instanceof Date) {
+    const p = n => String(n).padStart(2, "0");
+    return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`;
+  }
+  const s = String(v ?? "").trim();
+  const m = s.match(/^(\d{4})[.\-\/\s]+(\d{1,2})[.\-\/\s]+(\d{1,2})/);
+  return m ? `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}` : "";
+}
+function normLabel(s) { return String(s ?? "").replace(/\s+/g, "").trim(); }
+function cleanShiftName(raw) {
+  const s = String(raw ?? "").trim();
+  if (!s || s === "-") return null;
+  const m = s.match(/^([^\(（]+?)[\(（]([^\)）]*)[\)）]?\s*$/);
+  if (m) return { name: m[1].trim(), note: m[2].trim() };
+  return { name: s, note: "" };
+}
+function findShiftBlocks(rows) {
+  const blocks = [];
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r] || [];
+    for (let c = 0; c < row.length; c++) {
+      if (normLabel(row[c]) === "날짜") { blocks.push({ dateRow: r, labelCol: c }); break; }
+    }
+  }
+  return blocks;
+}
+function parseShiftSheet(rows, peList) {
+  const blocks = findShiftBlocks(rows);
+  if (!blocks.length) return { error: "'날짜' 행을 찾지 못했습니다" };
+  const plan = [], errs = [];
+  blocks.forEach((blk, bi) => {
+    const { dateRow, labelCol } = blk;
+    const workRow = dateRow + 2;
+    const rowByLabel = {};
+    const blockEnd = bi + 1 < blocks.length ? blocks[bi + 1].dateRow : rows.length;
+    for (let r = dateRow + 1; r < blockEnd; r++) {
+      const label = normLabel((rows[r] || [])[labelCol]);
+      if (label) rowByLabel[label] = r;
+    }
+    const kGN = Object.keys(rowByLabel).find(k => k.startsWith("분당9시"));
+    const kG10 = Object.keys(rowByLabel).find(k => k.startsWith("분당10시"));
+    const kOff = Object.keys(rowByLabel).find(k => k.startsWith("휴무"));
+    if (!kGN || !kG10 || !kOff) {
+      errs.push(`(${bi + 1}번째 주 블록) 분당9시~18시/분당10시~19시/휴무자 행을 모두 찾지 못했습니다`);
+      return;
+    }
+    const rGN = rowByLabel[kGN], rG10 = rowByLabel[kG10], rOff = rowByLabel[kOff];
+    const rOverflow = rOff + 1;
+
+    const dateCols = [];
+    const hdr = rows[dateRow], work = rows[workRow] || [];
+    for (let c = labelCol + 1; c < hdr.length; c++) {
+      const d = normSheetDate(hdr[c]);
+      if (!d) continue;
+      let driveCol = null;
+      for (let cc = c + 1; cc < hdr.length && !normSheetDate(hdr[cc]); cc++) {
+        if (normLabel(work[cc]) === "시승") { driveCol = cc; break; }
+      }
+      dateCols.push({ date: d, col: c, driveCol });
+    }
+
+    for (const { date, col, driveCol } of dateCols) {
+      const info = {};
+      const setLoc = (raw, loc, memo) => {
+        const parsed = cleanShiftName(raw); if (!parsed) return;
+        const name = parsed.name;
+        if (!peList.includes(name)) { errs.push(`${date} '${name}' — PE 명단에 없는 이름`); return; }
+        if (info[name] && info[name].loc && info[name].loc !== loc) {
+          errs.push(`${date} ${name} — 두 곳에 동시 배정됨 (${info[name].loc}/${loc})`); return;
+        }
+        info[name] = { loc, memo: parsed.note || memo || (info[name]?.memo || ""), drive: info[name]?.drive };
+      };
+      String(rows[rGN][col] ?? "").split(/[,\/、]+/).forEach(nm => setLoc(nm, "분당", "9시출근"));
+      String(rows[rG10][col] ?? "").split(/[,\/、]+/).forEach(nm => setLoc(nm, "분당", "10시출근"));
+
+      if (driveCol != null) {
+        const dv = cleanShiftName(rows[rGN][driveCol]);
+        if (dv) {
+          if (!peList.includes(dv.name)) errs.push(`${date} '${dv.name}' — 시승담당에 PE 명단에 없는 이름`);
+          else if (info[dv.name]) info[dv.name].drive = true;
+          else info[dv.name] = { loc: "분당", drive: true, memo: "시승담당" };   // 분당 시승 전담(별도 역할)
+        }
+      }
+      let offRaw = String(rows[rOff][col] ?? "");
+      if (rows[rOverflow] && rows[rOverflow][col] != null) offRaw += "," + String(rows[rOverflow][col]);
+      offRaw.split(/[,\/、]+/).forEach(raw => {
+        const parsed = cleanShiftName(raw); if (!parsed) return;
+        const name = parsed.name;
+        if (!peList.includes(name)) { errs.push(`${date} '${name}' — 휴무자에 PE 명단에 없는 이름`); return; }
+        if (info[name] && info[name].loc) { errs.push(`${date} ${name} — 근무 배정과 휴무자에 동시 등록됨`); return; }
+        info[name] = { loc: "휴무", drive: null, memo: parsed.note || "" };
+      });
+      for (const nm of Object.keys(info)) if (info[nm].drive === undefined) info[nm].drive = (info[nm].loc === "휴무") ? null : false;
+      if (Object.keys(info).length) plan.push({ date, info });
+    }
+  });
+  return { plan, errs };
+}
+
+$("uploadShiftBtn").onclick = () => { $("shiftFile").value = ""; $("shiftFile").click(); };
+$("shiftFile").onchange = async (ev) => {
+  const file = ev.target.files[0]; if (!file) return;
+  if (busy) return; busy = true;
+  $("uploadShiftBtn").disabled = true; $("uploadShiftBtn").textContent = "읽는 중...";
+  try {
+    const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { cellDates: true });
+    if (!wb.SheetNames.length) { toast("파일이 비어 있습니다"); return; }
+
+    let plan = [], errs = [], parsedSheets = [], skippedSheets = [];
+    for (const name of wb.SheetNames) {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false });
+      if (!rows.length) continue;
+      const r = parseShiftSheet(rows, pes);
+      if (r.error) { skippedSheets.push(`${name}(${r.error})`); continue; }  // '날짜' 행 없는 시트는 건너뜀
+      parsedSheets.push(name);
+      plan = plan.concat(r.plan);
+      errs = errs.concat(r.errs.map(e => `[${name}] ${e}`));
+    }
+    if (!parsedSheets.length) { toast("근무표 형식의 시트를 찾지 못했습니다"); return; }
+    if (errs.length) { alert("입력 오류 " + errs.length + "건 — 수정 후 다시 올려주세요.\n\n" + errs.slice(0, 12).join("\n")); return; }
+    if (!plan.length) { toast("반영할 날짜가 없습니다"); return; }
+    plan.sort((a, b) => a.date.localeCompare(b.date));
+
+    let msg = `${parsedSheets.length}개 시트 · ${plan.length}일치 근무표를 반영합니다.\n(${plan[0].date} ~ ${plan[plan.length - 1].date})\n\n기존에 저장된 해당 날짜의 근무 정보는 덮어쓰기 됩니다.`;
+    if (skippedSheets.length) msg += `\n\n⚠ 형식이 맞지 않아 건너뛴 시트: ${skippedSheets.join(", ")}`;
+    if (!confirm(msg + "\n\n진행할까요?")) return;
+
+    $("uploadShiftBtn").textContent = "반영 중...";
+    for (let i = 0; i < plan.length; i += 400) {
+      const batch = writeBatch(db);
+      plan.slice(i, i + 400).forEach(p => batch.set(doc(db, "peInfo", p.date), { info: p.info }));
+      await batch.commit();
+    }
+    toast(`✅ ${plan.length}일치 근무표 반영 완료`);
+  } catch (e) {
+    toast("업로드 실패 — " + errMsg(e));
+  } finally {
+    busy = false; $("uploadShiftBtn").disabled = false; $("uploadShiftBtn").textContent = "📅 근무표 업로드";
+  }
+};
+
+/* ── PE: 엑셀 내보내기 ── */
+$("exportBtn").onclick = async () => {
+  const from = prompt("시작일 (YYYY-MM-DD)", curDate.slice(0, 8) + "01"); if (from === null) return;
+  const to = prompt("종료일 (YYYY-MM-DD)", curDate); if (to === null) return;
+  try {
+    const r = await call.exportRange({ from: from.trim(), to: to.trim() });
+    if (!r.data.rows.length) { toast("해당 기간에 예약이 없습니다"); return; }
+    const escCsv = v => { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const csv = "\uFEFF" + [r.data.header, ...r.data.rows].map(row => row.map(escCsv).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "인도예약_" + from.trim() + "_" + to.trim() + ".csv";
+    a.click(); URL.revokeObjectURL(a.href);
+    toast(r.data.rows.length + "건 내보내기 완료");
+  } catch (e) { toast(errMsg(e)); }
+};
+
+/* ── 공통 이벤트 ── */
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if (t.matches("[data-close]")) { t.closest(".overlay").classList.remove("open"); return; }
+  if (t.classList.contains("add-hit")) { openForm(t.dataset.time, t.dataset.pe, null); return; }
+  const bk = t.closest(".bk"); if (bk) { openDetail(bk.dataset.id); return; }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("bk")) openDetail(e.target.dataset.id);
+  if (e.key === "Escape") document.querySelectorAll(".overlay.open").forEach(o => { if (o.id !== "authOverlay") o.classList.remove("open"); });
+});
+
+/* ── PWA 설치 ── */
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredPrompt = e; $("installBtn").style.display = "inline-block"; });
+$("installBtn").onclick = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const c = await deferredPrompt.userChoice;
+    if (c.outcome === "accepted") { $("installBtn").style.display = "none"; toast("홈 화면에 앱이 설치되었습니다"); }
+    deferredPrompt = null;
+  } else alert("아이폰: Safari 하단 공유(⬆) → '홈 화면에 추가'\n안드로이드: 크롬 메뉴(⋮) → '앱 설치'");
+};
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+if (isIOS && !isStandalone) $("installBtn").style.display = "inline-block";
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+
+$("datePick").value = curDate;
+setAuthMode(false);
+</script>
+</body>
+</html>
